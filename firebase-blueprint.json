@@ -1,0 +1,669 @@
+{
+  "entities": {
+    "UserPrivate": {
+      "title": "UserPrivate",
+      "description": "Private user account record including RBAC role, approval status, privacy settings, and PII.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "fullName": { "type": "string", "minLength": 2, "maxLength": 100 },
+        "username": { "type": "string", "minLength": 3, "maxLength": 30, "pattern": "^[a-zA-Z0-9_]+$" },
+        "email": { "type": "string", "format": "email", "minLength": 5, "maxLength": 160 },
+        "role": { "type": "string", "enum": ["super_admin", "school_admin", "headmaster", "teacher", "class_teacher", "class_monitor", "student", "alumni"] },
+        "requestedRole": { "type": "string", "enum": ["teacher", "class_teacher", "class_monitor", "student", "alumni"] },
+        "status": { "type": "string", "enum": ["pending", "approved", "suspended"] },
+        "classOrDept": { "type": "string", "minLength": 2, "maxLength": 80 },
+        "studentRegNo": { "type": "string", "maxLength": 40 },
+        "schoolRegCode": { "type": "string", "minLength": 4, "maxLength": 32 },
+        "house": { "type": "string", "maxLength": 40 },
+        "phone": { "type": "string", "maxLength": 30 },
+        "bio": { "type": "string", "maxLength": 300 },
+        "avatarUrl": { "type": "string", "maxLength": 500 },
+        "coverUrl": { "type": "string", "maxLength": 500 },
+        "privacy": { "type": "object" },
+        "lastActiveAt": { "type": "string", "format": "date-time" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "fullName", "username", "email", "role", "status", "classOrDept", "schoolRegCode", "createdAt", "updatedAt"]
+    },
+    "UserDirectory": {
+      "title": "UserDirectory",
+      "description": "Public school directory card without PII for community discovery and privacy-respecting presence.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "fullName": { "type": "string", "minLength": 2, "maxLength": 100 },
+        "username": { "type": "string", "minLength": 3, "maxLength": 30, "pattern": "^[a-zA-Z0-9_]+$" },
+        "role": { "type": "string", "enum": ["super_admin", "school_admin", "headmaster", "teacher", "class_teacher", "class_monitor", "student", "alumni"] },
+        "status": { "type": "string", "enum": ["pending", "approved", "suspended"] },
+        "classOrDept": { "type": "string", "minLength": 2, "maxLength": 80 },
+        "bio": { "type": "string", "maxLength": 300 },
+        "avatarUrl": { "type": "string", "maxLength": 500 },
+        "coverUrl": { "type": "string", "maxLength": 500 },
+        "isOnline": { "type": "boolean" },
+        "showOnlineStatus": { "type": "boolean" },
+        "showLastSeen": { "type": "boolean" },
+        "allowMessagesFrom": { "type": "string", "enum": ["everyone", "staff_and_classmates", "nobody"] },
+        "profileVisibility": { "type": "string", "enum": ["community", "class_only"] },
+        "lastActiveAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "fullName", "username", "role", "status", "classOrDept", "updatedAt"]
+    },
+    "SchoolCode": {
+      "title": "SchoolCode",
+      "description": "Administrator-managed school registration code.",
+      "type": "object",
+      "properties": {
+        "code": { "type": "string", "minLength": 4, "maxLength": 32 },
+        "label": { "type": "string", "minLength": 2, "maxLength": 80 },
+        "roleHint": { "type": "string", "enum": ["any", "student", "teacher", "alumni"] },
+        "active": { "type": "boolean" },
+        "createdBy": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["code", "label", "roleHint", "active", "createdBy", "createdAt"]
+    },
+    "Post": {
+      "title": "Post",
+      "description": "Social feed post supporting text, multiple ImgBB images, and Cloudinary videos.",
+      "type": "object",
+      "properties": {
+        "authorId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "authorName": { "type": "string", "minLength": 2, "maxLength": 100 },
+        "authorUsername": { "type": "string", "maxLength": 30 },
+        "authorAvatarUrl": { "type": "string", "maxLength": 500 },
+        "authorRole": { "type": "string", "minLength": 2, "maxLength": 40 },
+        "caption": { "type": "string", "maxLength": 200 },
+        "content": { "type": "string", "minLength": 1, "maxLength": 2000 },
+        "mediaType": { "type": "string", "enum": ["text", "image", "video"] },
+        "imageUrl": { "type": "string", "maxLength": 500 },
+        "imageUrls": { "type": "array" },
+        "videoUrl": { "type": "string", "maxLength": 600 },
+        "videoPublicId": { "type": "string", "maxLength": 240 },
+        "videoFormat": { "type": "string", "maxLength": 20 },
+        "videoDuration": { "type": "number" },
+        "videoThumbnailUrl": { "type": "string", "maxLength": 600 },
+        "videoWidth": { "type": "integer" },
+        "videoHeight": { "type": "integer" },
+        "category": { "type": "string", "enum": ["general", "academics", "sports", "clubs", "alumni"] },
+        "likesCount": { "type": "integer" },
+        "commentsCount": { "type": "integer" },
+        "sharesCount": { "type": "integer" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["authorId", "authorName", "authorRole", "content", "category", "likesCount", "commentsCount", "createdAt", "updatedAt"]
+    },
+    "Comment": {
+      "title": "Comment",
+      "description": "Comment or threaded reply on a social feed post.",
+      "type": "object",
+      "properties": {
+        "postId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "authorId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "authorName": { "type": "string", "minLength": 2, "maxLength": 100 },
+        "authorUsername": { "type": "string", "maxLength": 30 },
+        "authorAvatarUrl": { "type": "string", "maxLength": 500 },
+        "content": { "type": "string", "minLength": 1, "maxLength": 800 },
+        "parentCommentId": { "type": "string", "maxLength": 128 },
+        "replyToName": { "type": "string", "maxLength": 100 },
+        "likesCount": { "type": "integer" },
+        "edited": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["postId", "authorId", "authorName", "content", "createdAt"]
+    },
+    "CommentLike": {
+      "title": "CommentLike",
+      "description": "Like marker keyed by userId under a comment.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "commentId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "postId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "commentId", "postId", "createdAt"]
+    },
+    "PostLike": {
+      "title": "PostLike",
+      "description": "Like marker keyed by userId under a post.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "postId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "postId", "createdAt"]
+    },
+    "Bookmark": {
+      "title": "Bookmark",
+      "description": "User-saved post, announcement, or academic resource.",
+      "type": "object",
+      "properties": {
+        "itemId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "itemType": { "type": "string", "enum": ["post", "announcement", "resource"] },
+        "title": { "type": "string", "minLength": 1, "maxLength": 180 },
+        "summary": { "type": "string", "maxLength": 400 },
+        "authorName": { "type": "string", "maxLength": 100 },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["itemId", "itemType", "title", "createdAt"]
+    },
+    "Conversation": {
+      "title": "Conversation",
+      "description": "Private 1-to-1 conversation metadata.",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string", "maxLength": 120 },
+        "isGroup": { "type": "boolean" },
+        "participantIds": { "type": "array" },
+        "participantNames": { "type": "object" },
+        "participantAvatars": { "type": "object" },
+        "lastMessage": { "type": "string", "maxLength": 400 },
+        "lastMessageSenderId": { "type": "string", "maxLength": 128 },
+        "lastMessageStatus": { "type": "string", "enum": ["sent", "delivered", "seen"] },
+        "createdBy": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["isGroup", "participantIds", "createdBy", "createdAt", "updatedAt"]
+    },
+    "ConversationParticipant": {
+      "title": "ConversationParticipant",
+      "description": "Subcollection membership record gating private conversation access, unread counts, pinning, archiving, and typing.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "conversationId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "unreadCount": { "type": "integer" },
+        "pinned": { "type": "boolean" },
+        "archived": { "type": "boolean" },
+        "typing": { "type": "boolean" },
+        "typingUpdatedAt": { "type": "string", "format": "date-time" },
+        "lastDeliveredAt": { "type": "string", "format": "date-time" },
+        "lastReadAt": { "type": "string", "format": "date-time" },
+        "joinedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "conversationId", "unreadCount", "joinedAt"]
+    },
+    "Message": {
+      "title": "Message",
+      "description": "Private message with text, multiple ImgBB images, Cloudinary video, replies, reactions, edits, deletes, and delivery/seen receipts.",
+      "type": "object",
+      "properties": {
+        "conversationId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "senderId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "senderName": { "type": "string", "maxLength": 100 },
+        "senderAvatarUrl": { "type": "string", "maxLength": 500 },
+        "text": { "type": "string", "minLength": 1, "maxLength": 2000 },
+        "mediaType": { "type": "string", "enum": ["text", "image", "video"] },
+        "imageUrl": { "type": "string", "maxLength": 500 },
+        "imageUrls": { "type": "array" },
+        "videoUrl": { "type": "string", "maxLength": 600 },
+        "videoPublicId": { "type": "string", "maxLength": 240 },
+        "videoFormat": { "type": "string", "maxLength": 20 },
+        "videoDuration": { "type": "number" },
+        "videoThumbnailUrl": { "type": "string", "maxLength": 600 },
+        "replyToMessageId": { "type": "string", "maxLength": 128 },
+        "replyToSenderName": { "type": "string", "maxLength": 100 },
+        "replyToText": { "type": "string", "maxLength": 300 },
+        "forwarded": { "type": "boolean" },
+        "edited": { "type": "boolean" },
+        "deletedForEveryone": { "type": "boolean" },
+        "deletedForIds": { "type": "array" },
+        "reactions": { "type": "object" },
+        "status": { "type": "string", "enum": ["sent", "delivered", "seen"] },
+        "deliveredAt": { "type": "string", "format": "date-time" },
+        "seenAt": { "type": "string", "format": "date-time" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["conversationId", "senderId", "text", "createdAt"]
+    },
+    "Group": {
+      "title": "Group",
+      "description": "WhatsApp-style school group for classes, subjects, sports, clubs, or community.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "minLength": 2, "maxLength": 100 },
+        "description": { "type": "string", "minLength": 2, "maxLength": 500 },
+        "type": { "type": "string", "enum": ["class", "subject", "sports", "club", "community"] },
+        "avatarUrl": { "type": "string", "maxLength": 500 },
+        "privacy": { "type": "string", "enum": ["open", "approval_required"] },
+        "onlyAdminsCanMessage": { "type": "boolean" },
+        "onlyAdminsCanEditInfo": { "type": "boolean" },
+        "pinnedMessageId": { "type": "string", "maxLength": 128 },
+        "pinnedMessageText": { "type": "string", "maxLength": 300 },
+        "lastMessage": { "type": "string", "maxLength": 400 },
+        "lastMessageAt": { "type": "string", "format": "date-time" },
+        "activeCallId": { "type": "string", "maxLength": 128 },
+        "activeCallType": { "type": "string", "enum": ["audio", "video"] },
+        "activeCallRoomName": { "type": "string", "maxLength": 160 },
+        "createdBy": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "memberCount": { "type": "integer" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "description", "type", "createdBy", "memberCount", "createdAt", "updatedAt"]
+    },
+    "GroupMember": {
+      "title": "GroupMember",
+      "description": "Group membership and role record.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "groupId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "memberName": { "type": "string", "maxLength": 100 },
+        "memberUsername": { "type": "string", "maxLength": 30 },
+        "memberAvatarUrl": { "type": "string", "maxLength": 500 },
+        "groupRole": { "type": "string", "enum": ["admin", "moderator", "member"] },
+        "status": { "type": "string", "enum": ["active", "pending"] },
+        "typing": { "type": "boolean" },
+        "unreadCount": { "type": "integer" },
+        "lastReadAt": { "type": "string", "format": "date-time" },
+        "joinedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "groupId", "groupRole", "joinedAt"]
+    },
+    "GroupMessage": {
+      "title": "GroupMessage",
+      "description": "Real-time group chat message or announcement with media, replies, and reactions.",
+      "type": "object",
+      "properties": {
+        "groupId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "authorId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "authorName": { "type": "string", "minLength": 2, "maxLength": 100 },
+        "authorAvatarUrl": { "type": "string", "maxLength": 500 },
+        "content": { "type": "string", "minLength": 1, "maxLength": 1500 },
+        "isAnnouncement": { "type": "boolean" },
+        "mediaType": { "type": "string", "enum": ["text", "image", "video"] },
+        "imageUrls": { "type": "array" },
+        "videoUrl": { "type": "string", "maxLength": 600 },
+        "videoPublicId": { "type": "string", "maxLength": 240 },
+        "videoFormat": { "type": "string", "maxLength": 20 },
+        "videoDuration": { "type": "number" },
+        "videoThumbnailUrl": { "type": "string", "maxLength": 600 },
+        "replyToId": { "type": "string", "maxLength": 128 },
+        "replyToAuthorName": { "type": "string", "maxLength": 100 },
+        "replyToContent": { "type": "string", "maxLength": 300 },
+        "reactions": { "type": "object" },
+        "edited": { "type": "boolean" },
+        "deletedForEveryone": { "type": "boolean" },
+        "readByIds": { "type": "array" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["groupId", "authorId", "authorName", "content", "isAnnouncement", "createdAt"]
+    },
+    "AcademicClass": {
+      "title": "AcademicClass",
+      "description": "School class or stream definition.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "minLength": 2, "maxLength": 60 },
+        "stream": { "type": "string", "maxLength": 40 },
+        "academicYear": { "type": "string", "minLength": 4, "maxLength": 12 },
+        "classTeacherId": { "type": "string", "maxLength": 128 },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "academicYear", "createdAt"]
+    },
+    "Subject": {
+      "title": "Subject",
+      "description": "Academic subject catalog entry.",
+      "type": "object",
+      "properties": {
+        "code": { "type": "string", "minLength": 2, "maxLength": 20 },
+        "name": { "type": "string", "minLength": 2, "maxLength": 80 },
+        "department": { "type": "string", "minLength": 2, "maxLength": 60 },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["code", "name", "department", "createdAt"]
+    },
+    "Examination": {
+      "title": "Examination",
+      "description": "Official school examination period.",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string", "minLength": 2, "maxLength": 100 },
+        "term": { "type": "string", "minLength": 2, "maxLength": 40 },
+        "year": { "type": "string", "minLength": 4, "maxLength": 10 },
+        "published": { "type": "boolean" },
+        "createdBy": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["title", "term", "year", "published", "createdBy", "createdAt"]
+    },
+    "Result": {
+      "title": "Result",
+      "description": "Private student examination mark strictly scoped to owner student and authorized staff.",
+      "type": "object",
+      "properties": {
+        "studentId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "studentName": { "type": "string", "maxLength": 100 },
+        "examId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "examTitle": { "type": "string", "maxLength": 100 },
+        "classId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "subjectId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "subjectName": { "type": "string", "maxLength": 80 },
+        "marks": { "type": "number" },
+        "grade": { "type": "string", "minLength": 1, "maxLength": 4 },
+        "remarks": { "type": "string", "maxLength": 200 },
+        "published": { "type": "boolean" },
+        "recordedBy": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["studentId", "examId", "classId", "subjectId", "marks", "grade", "published", "recordedBy", "createdAt", "updatedAt"]
+    },
+    "Announcement": {
+      "title": "Announcement",
+      "description": "Official school announcement published by authorized staff.",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string", "minLength": 3, "maxLength": 160 },
+        "body": { "type": "string", "minLength": 3, "maxLength": 3000 },
+        "category": { "type": "string", "enum": ["general", "examination", "academic", "events", "important"] },
+        "pinned": { "type": "boolean" },
+        "authorId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "authorName": { "type": "string", "minLength": 2, "maxLength": 100 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["title", "body", "category", "pinned", "authorId", "authorName", "createdAt", "updatedAt"]
+    },
+    "Resource": {
+      "title": "Resource",
+      "description": "Study note, syllabus, or past examination paper.",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string", "minLength": 2, "maxLength": 160 },
+        "description": { "type": "string", "maxLength": 600 },
+        "type": { "type": "string", "enum": ["notes", "past_paper", "syllabus"] },
+        "subjectId": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "classId": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "fileUrl": { "type": "string", "minLength": 5, "maxLength": 500 },
+        "uploadedBy": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "uploaderName": { "type": "string", "maxLength": 100 },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["title", "type", "subjectId", "classId", "fileUrl", "uploadedBy", "createdAt"]
+    },
+    "Assignment": {
+      "title": "Assignment",
+      "description": "Class assignment published by a teacher.",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string", "minLength": 2, "maxLength": 160 },
+        "description": { "type": "string", "minLength": 2, "maxLength": 1500 },
+        "subjectId": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "classId": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "dueDate": { "type": "string", "maxLength": 40 },
+        "teacherId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "teacherName": { "type": "string", "maxLength": 100 },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["title", "description", "subjectId", "classId", "dueDate", "teacherId", "createdAt"]
+    },
+    "TimetableSlot": {
+      "title": "TimetableSlot",
+      "description": "Lesson or examination schedule slot.",
+      "type": "object",
+      "properties": {
+        "kind": { "type": "string", "enum": ["lesson", "exam"] },
+        "className": { "type": "string", "minLength": 2, "maxLength": 60 },
+        "dayOfWeek": { "type": "string", "minLength": 2, "maxLength": 20 },
+        "startTime": { "type": "string", "minLength": 3, "maxLength": 20 },
+        "endTime": { "type": "string", "minLength": 3, "maxLength": 20 },
+        "subject": { "type": "string", "minLength": 2, "maxLength": 80 },
+        "teacherName": { "type": "string", "minLength": 2, "maxLength": 100 },
+        "room": { "type": "string", "maxLength": 40 },
+        "createdBy": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["kind", "className", "dayOfWeek", "startTime", "endTime", "subject", "teacherName", "createdBy", "createdAt"]
+    },
+    "SchoolEvent": {
+      "title": "SchoolEvent",
+      "description": "Upcoming school event, exam date, sports fixture, or club meeting.",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string", "minLength": 2, "maxLength": 140 },
+        "description": { "type": "string", "maxLength": 800 },
+        "category": { "type": "string", "enum": ["academic", "exam", "sports", "club", "general"] },
+        "eventDate": { "type": "string", "minLength": 4, "maxLength": 30 },
+        "location": { "type": "string", "maxLength": 100 },
+        "createdBy": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["title", "category", "eventDate", "createdBy", "createdAt"]
+    },
+    "Poll": {
+      "title": "Poll",
+      "description": "School community poll with bounded options.",
+      "type": "object",
+      "properties": {
+        "question": { "type": "string", "minLength": 4, "maxLength": 240 },
+        "options": { "type": "array" },
+        "counts": { "type": "array" },
+        "totalVotes": { "type": "integer" },
+        "audience": { "type": "string", "enum": ["all", "students", "staff", "alumni"] },
+        "closed": { "type": "boolean" },
+        "createdBy": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "creatorName": { "type": "string", "minLength": 2, "maxLength": 100 },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["question", "options", "counts", "totalVotes", "audience", "closed", "createdBy", "creatorName", "createdAt"]
+    },
+    "PollVote": {
+      "title": "PollVote",
+      "description": "Single vote record per user per poll.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "pollId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "optionIndex": { "type": "integer" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "pollId", "optionIndex", "createdAt"]
+    },
+    "LostFoundItem": {
+      "title": "LostFoundItem",
+      "description": "Lost or found item reported by a member.",
+      "type": "object",
+      "properties": {
+        "kind": { "type": "string", "enum": ["lost", "found"] },
+        "title": { "type": "string", "minLength": 2, "maxLength": 120 },
+        "description": { "type": "string", "minLength": 2, "maxLength": 600 },
+        "location": { "type": "string", "maxLength": 100 },
+        "resolved": { "type": "boolean" },
+        "reporterId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "reporterName": { "type": "string", "minLength": 2, "maxLength": 100 },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["kind", "title", "description", "resolved", "reporterId", "reporterName", "createdAt"]
+    },
+    "Achievement": {
+      "title": "Achievement",
+      "description": "Official student or school achievement.",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string", "minLength": 3, "maxLength": 140 },
+        "recipientName": { "type": "string", "minLength": 2, "maxLength": 100 },
+        "category": { "type": "string", "enum": ["academic", "sports", "leadership", "competition", "community"] },
+        "description": { "type": "string", "minLength": 3, "maxLength": 800 },
+        "awardedDate": { "type": "string", "maxLength": 30 },
+        "publishedBy": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["title", "recipientName", "category", "description", "publishedBy", "createdAt"]
+    },
+    "Report": {
+      "title": "Report",
+      "description": "Moderation report filed by a member.",
+      "type": "object",
+      "properties": {
+        "targetType": { "type": "string", "enum": ["post", "comment", "user", "group"] },
+        "targetId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "targetSummary": { "type": "string", "maxLength": 240 },
+        "reason": { "type": "string", "minLength": 3, "maxLength": 400 },
+        "reporterId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "reporterName": { "type": "string", "minLength": 2, "maxLength": 100 },
+        "status": { "type": "string", "enum": ["open", "reviewed", "resolved", "dismissed"] },
+        "reviewedBy": { "type": "string", "maxLength": 128 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["targetType", "targetId", "reason", "reporterId", "reporterName", "status", "createdAt", "updatedAt"]
+    },
+    "Notification": {
+      "title": "Notification",
+      "description": "User-scoped notification item.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "actorId": { "type": "string", "maxLength": 128 },
+        "kind": { "type": "string", "enum": ["message", "social", "announcement", "academic", "event", "group", "call"] },
+        "title": { "type": "string", "minLength": 2, "maxLength": 140 },
+        "body": { "type": "string", "minLength": 2, "maxLength": 400 },
+        "read": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "title", "body", "read", "createdAt"]
+    },
+    "AuditLog": {
+      "title": "AuditLog",
+      "description": "Immutable administrative audit trail.",
+      "type": "object",
+      "properties": {
+        "actorId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "action": { "type": "string", "minLength": 2, "maxLength": 80 },
+        "targetType": { "type": "string", "minLength": 2, "maxLength": 40 },
+        "targetId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "details": { "type": "string", "maxLength": 400 },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["actorId", "action", "targetType", "targetId", "createdAt"]
+    },
+    "CallSession": {
+      "title": "CallSession",
+      "description": "Real-time LiveKit audio/video call signaling and call history record.",
+      "type": "object",
+      "properties": {
+        "callId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "roomName": { "type": "string", "minLength": 3, "maxLength": 160, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "scope": { "type": "string", "enum": ["private", "group"] },
+        "callType": { "type": "string", "enum": ["audio", "video"] },
+        "conversationId": { "type": "string", "maxLength": 128 },
+        "groupId": { "type": "string", "maxLength": 128 },
+        "groupName": { "type": "string", "maxLength": 120 },
+        "callerId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "callerName": { "type": "string", "minLength": 2, "maxLength": 100 },
+        "callerAvatarUrl": { "type": "string", "maxLength": 500 },
+        "calleeId": { "type": "string", "maxLength": 128 },
+        "calleeName": { "type": "string", "maxLength": 100 },
+        "calleeAvatarUrl": { "type": "string", "maxLength": 500 },
+        "participantIds": { "type": "array" },
+        "joinedIds": { "type": "array" },
+        "declinedIds": { "type": "array" },
+        "status": { "type": "string", "enum": ["ringing", "active", "ended", "missed", "declined", "failed"] },
+        "startedAt": { "type": "string", "format": "date-time" },
+        "endedAt": { "type": "string", "format": "date-time" },
+        "durationSeconds": { "type": "integer" },
+        "endReason": { "type": "string", "maxLength": 120 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["callId", "roomName", "scope", "callType", "callerId", "callerName", "participantIds", "joinedIds", "status", "createdAt", "updatedAt"]
+    },
+    "FcmToken": {
+      "title": "FcmToken",
+      "description": "Firebase Cloud Messaging device push token registered by a member.",
+      "type": "object",
+      "properties": {
+        "token": { "type": "string", "minLength": 10, "maxLength": 500 },
+        "platform": { "type": "string", "minLength": 2, "maxLength": 40 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["token", "platform", "createdAt", "updatedAt"]
+    },
+    "AiConversation": {
+      "title": "AiConversation",
+      "description": "Private persistent LUGA AI conversation thread scoped to a single user.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "title": { "type": "string", "minLength": 1, "maxLength": 140 },
+        "learningLevel": { "type": "string", "enum": ["simple", "form_1_2", "form_3_4", "form_5_6"] },
+        "languagePref": { "type": "string", "enum": ["auto", "en", "sw"] },
+        "lastMessagePreview": { "type": "string", "maxLength": 400 },
+        "messageCount": { "type": "integer" },
+        "pinned": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "title", "learningLevel", "languagePref", "messageCount", "createdAt", "updatedAt"]
+    },
+    "AiMessage": {
+      "title": "AiMessage",
+      "description": "Message inside a user's private LUGA AI conversation thread.",
+      "type": "object",
+      "properties": {
+        "conversationId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "userId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "role": { "type": "string", "enum": ["user", "assistant"] },
+        "content": { "type": "string", "minLength": 1, "maxLength": 40000 },
+        "model": { "type": "string", "maxLength": 80 },
+        "attachments": { "type": "array" },
+        "rating": { "type": "string", "enum": ["up", "down", "none"] },
+        "edited": { "type": "boolean" },
+        "regenerated": { "type": "boolean" },
+        "error": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["conversationId", "userId", "role", "content", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": { "schema": { "$ref": "#/entities/UserPrivate" }, "description": "Private user account records." },
+    "/userDirectory/{userId}": { "schema": { "$ref": "#/entities/UserDirectory" }, "description": "Non-PII school community directory." },
+    "/users/{userId}/bookmarks/{bookmarkId}": { "schema": { "$ref": "#/entities/Bookmark" }, "description": "User-saved bookmarks." },
+    "/users/{userId}/fcmTokens/{tokenId}": { "schema": { "$ref": "#/entities/FcmToken" }, "description": "User FCM push tokens." },
+    "/users/{userId}/aiConversations/{convId}": { "schema": { "$ref": "#/entities/AiConversation" }, "description": "Private user LUGA AI conversation threads." },
+    "/users/{userId}/aiConversations/{convId}/messages/{messageId}": { "schema": { "$ref": "#/entities/AiMessage" }, "description": "Private user LUGA AI messages." },
+    "/schoolCodes/{codeId}": { "schema": { "$ref": "#/entities/SchoolCode" }, "description": "School registration codes." },
+    "/posts/{postId}": { "schema": { "$ref": "#/entities/Post" }, "description": "School social feed posts and videos." },
+    "/posts/{postId}/comments/{commentId}": { "schema": { "$ref": "#/entities/Comment" }, "description": "Post comments and replies." },
+    "/posts/{postId}/comments/{commentId}/likes/{userId}": { "schema": { "$ref": "#/entities/CommentLike" }, "description": "Comment likes." },
+    "/posts/{postId}/likes/{userId}": { "schema": { "$ref": "#/entities/PostLike" }, "description": "Post likes." },
+    "/conversations/{conversationId}": { "schema": { "$ref": "#/entities/Conversation" }, "description": "Private conversations." },
+    "/conversations/{conversationId}/participants/{userId}": { "schema": { "$ref": "#/entities/ConversationParticipant" }, "description": "Conversation membership gate and presence/pin/archive." },
+    "/conversations/{conversationId}/messages/{messageId}": { "schema": { "$ref": "#/entities/Message" }, "description": "Private messages with receipts and media." },
+    "/calls/{callId}": { "schema": { "$ref": "#/entities/CallSession" }, "description": "Real-time LiveKit call sessions and history." },
+    "/groups/{groupId}": { "schema": { "$ref": "#/entities/Group" }, "description": "School groups and clubs." },
+    "/groups/{groupId}/members/{userId}": { "schema": { "$ref": "#/entities/GroupMember" }, "description": "Group members and admins." },
+    "/groups/{groupId}/posts/{postId}": { "schema": { "$ref": "#/entities/GroupMessage" }, "description": "Group real-time chat messages and announcements." },
+    "/classes/{classId}": { "schema": { "$ref": "#/entities/AcademicClass" }, "description": "School classes." },
+    "/subjects/{subjectId}": { "schema": { "$ref": "#/entities/Subject" }, "description": "Academic subjects." },
+    "/examinations/{examId}": { "schema": { "$ref": "#/entities/Examination" }, "description": "Examination periods." },
+    "/results/{resultId}": { "schema": { "$ref": "#/entities/Result" }, "description": "Protected student examination results." },
+    "/announcements/{announcementId}": { "schema": { "$ref": "#/entities/Announcement" }, "description": "Official school announcements." },
+    "/resources/{resourceId}": { "schema": { "$ref": "#/entities/Resource" }, "description": "Academic study notes and past papers." },
+    "/assignments/{assignmentId}": { "schema": { "$ref": "#/entities/Assignment" }, "description": "Class assignments." },
+    "/timetables/{slotId}": { "schema": { "$ref": "#/entities/TimetableSlot" }, "description": "Lesson and examination timetable slots." },
+    "/events/{eventId}": { "schema": { "$ref": "#/entities/SchoolEvent" }, "description": "School calendar events." },
+    "/polls/{pollId}": { "schema": { "$ref": "#/entities/Poll" }, "description": "School polls." },
+    "/polls/{pollId}/votes/{userId}": { "schema": { "$ref": "#/entities/PollVote" }, "description": "User poll votes." },
+    "/lostFound/{itemId}": { "schema": { "$ref": "#/entities/LostFoundItem" }, "description": "Lost and found items." },
+    "/achievements/{achievementId}": { "schema": { "$ref": "#/entities/Achievement" }, "description": "Official student achievements." },
+    "/reports/{reportId}": { "schema": { "$ref": "#/entities/Report" }, "description": "Moderation reports." },
+    "/notifications/{notificationId}": { "schema": { "$ref": "#/entities/Notification" }, "description": "User notifications." },
+    "/auditLogs/{logId}": { "schema": { "$ref": "#/entities/AuditLog" }, "description": "Immutable administrative audit logs." }
+  }
+}
